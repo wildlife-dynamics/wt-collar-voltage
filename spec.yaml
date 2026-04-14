@@ -1,4 +1,4 @@
-id: collar_voltage
+id: source_voltage
 requirements:
   - name: ecoscope-workflows-core
     version: "0.22.17.*"
@@ -253,6 +253,19 @@ workflow:
         - filename_suffix 
       argvalues: ${{ workflow.zip_html_unique.return }}
   
+  - name: Convert collared plot html to png 
+    id: convert_collared_png 
+    task: html_to_png
+    partial:
+      output_dir: ${{ env.ECOSCOPE_WORKFLOWS_RESULTS }}
+      html_path: ${{ workflow.persist_collar_html.return }}
+      config:
+        full_page: false
+        device_scale_factor: 2.0
+        wait_for_timeout: 10
+        max_concurrent_pages: 1
+
+  - 
   - name: Create widget for collar voltage plot
     id: collared_voltage_widget
     task: create_map_widget_single_view
@@ -273,6 +286,17 @@ workflow:
     partial:
       widgets: ${{ workflow.collared_voltage_widget.return }}
 
+  # # Download Logo
+  # - title: Report logo
+  #   type: task-group
+  #   description: Download or fetch the logo to be used in the report cover page. This task can be customized to fetch logos from different sources based on user requirements.
+  #   tasks:
+  #     - name: null
+  #       id: logo_path
+  #       task: get_file_path 
+  #       partial: 
+  #         output_path: ${{ env.ECOSCOPE_WORKFLOWS_RESULTS }}
+          
   - name: Collar Voltage widget
     id: collar_voltage_dashboard
     task: gather_dashboard
