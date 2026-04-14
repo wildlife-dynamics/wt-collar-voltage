@@ -1,7 +1,7 @@
 [workspace]
 platforms = ['linux-64', 'osx-arm64', 'osx-64', 'win-64']
 
-name = "collar_voltage"
+name = "source_voltage"
 channels = [
   'https://repo.prefix.dev/ecoscope-workflows/',
   'https://repo.prefix.dev/ecoscope-workflows-custom/',
