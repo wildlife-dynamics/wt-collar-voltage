@@ -12,7 +12,7 @@ from urllib.parse import urlparse
 
 import click
 
-RELEASE_NAME = "ecoscope-workflows-collar-voltage-workflow"
+RELEASE_NAME = "ecoscope-workflows-source-voltage-workflow"
 
 
 def to_windows_safe_path(path: str) -> str:

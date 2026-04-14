@@ -5,35 +5,35 @@
 
 ```yaml
 # fingerprint:
-artifacts_sha256_basic: c5318525ac30b3d4ab56cf644758f9b09b33b3c77955166ab55c2d438f0c956c
-artifacts_sha256_strict: ff45aaeefbf14ea3459808762304064e90aa0e854b629cc8715da2077cf73b10
+artifacts_sha256_basic: 9d31120a2f6fbb2f85b578447c9ba1c727a73a69e50572c27e5c534c78a62a25
+artifacts_sha256_strict: ea14bd3220bdc3d3915c7b9b3d6b66e59eeb91464f10b973c39ed161a72b1acd
 installed_requirements:
 - channel: https://repo.prefix.dev/ecoscope-workflows/
   name: ecoscope-workflows-core
-  version: {version: ==0.22.17}
+  version: {version: ==0.22.18}
 - channel: https://repo.prefix.dev/ecoscope-workflows/
   name: ecoscope-workflows-ext-ecoscope
-  version: {version: ==0.22.17}
+  version: {version: ==0.22.18}
 - channel: https://repo.prefix.dev/ecoscope-workflows-custom/
   name: ecoscope-workflows-ext-custom
-  version: {version: ==0.0.40}
+  version: {version: ==0.0.45}
 - channel: https://repo.prefix.dev/ecoscope-workflows-custom/
   name: ecoscope-workflows-ext-ste
-  version: {version: ==0.0.18}
+  version: {version: ==0.0.19}
 - channel: https://repo.prefix.dev/ecoscope-workflows-custom/
   name: ecoscope-workflows-ext-mnc
-  version: {version: ==0.0.7}
-- channel: https://repo.prefix.dev/ecoscope-workflows-custom/
-  name: ecoscope-workflows-ext-big-life
   version: {version: ==0.0.8}
 - channel: https://repo.prefix.dev/ecoscope-workflows-custom/
+  name: ecoscope-workflows-ext-big-life
+  version: {version: ==0.0.11}
+- channel: https://repo.prefix.dev/ecoscope-workflows-custom/
   name: ecoscope-workflows-ext-mep
-  version: {version: ==0.0.13}
-params_sha256: 8450d60067d99f74a2156be90bb9fcced67048a9d4ee0b703e5484446bec5b7b
-spec_sha256: ab4fbe7ab24305bf92727f32c2a94df0a463771c2fb15eec5d0bfe15222b356b
+  version: {version: ==0.0.15}
+params_sha256: a932f1424db29bb46cec20faa2a6d5bdc80607078208a51a68eeb69ced9ce744
+spec_sha256: 59c0429c4ec3f38d5dc97f355a3a8e6029a6a8e55a72d606ef61ff4e5eb1f0ce
 
 ```
 
-# ecoscope-workflows-collar-voltage-workflow
+# ecoscope-workflows-source-voltage-workflow
 
 ![](graph.png)
