@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Union
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -21,7 +21,11 @@ class SubjectGroupVar(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    var: str = Field(..., title="")
+    var: str = Field(..., title="Subject Group Name")
+
+
+class SubjectGroup(BaseModel):
+    subject_group_var: Optional[SubjectGroupVar] = Field(None, title="")
 
 
 class TimezoneInfo(BaseModel):
@@ -33,6 +37,16 @@ class TimezoneInfo(BaseModel):
 
 class EarthRangerConnection(BaseModel):
     name: str = Field(..., title="Data Source")
+
+
+class DownloadFile(BaseModel):
+    url: str = Field(..., description="URL to download a file", title="URL")
+
+
+class LocalFile(BaseModel):
+    file_path: str = Field(
+        ..., description="Path to a local file", title="Local file path"
+    )
 
 
 class TimeRange(BaseModel):
@@ -56,7 +70,18 @@ class ErClientName(BaseModel):
     )
 
 
-class Params(BaseModel):
+class LogoPath(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    input_method: Union[DownloadFile, LocalFile] = Field(..., title="Input Method")
+
+
+class ReportLogo(BaseModel):
+    logo_path: Optional[LogoPath] = Field(None, title="")
+
+
+class FormData(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
@@ -73,4 +98,13 @@ class Params(BaseModel):
     er_client_name: Optional[ErClientName] = Field(
         None, title="Connect to earth ranger"
     )
-    subject_group_var: Optional[SubjectGroupVar] = Field(None, title="")
+    Subject_Group: Optional[SubjectGroup] = Field(
+        None,
+        alias="Subject Group",
+        description="Choose subject group to generate collar voltage charts and overall speedmap",
+    )
+    Report_logo: Optional[ReportLogo] = Field(
+        None,
+        alias="Report logo",
+        description="Download or fetch the logo to be used in the report cover page. This task can be customized to fetch logos from different sources based on user requirements.",
+    )

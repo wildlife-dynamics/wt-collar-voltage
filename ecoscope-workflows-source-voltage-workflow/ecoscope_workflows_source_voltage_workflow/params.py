@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Union
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -21,11 +21,7 @@ class SubjectGroupVar(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    var: str = Field(..., title="Subject Group Name")
-
-
-class SubjectGroup(BaseModel):
-    subject_group_var: Optional[SubjectGroupVar] = Field(None, title="")
+    var: str = Field(..., title="")
 
 
 class TimezoneInfo(BaseModel):
@@ -37,6 +33,16 @@ class TimezoneInfo(BaseModel):
 
 class EarthRangerConnection(BaseModel):
     name: str = Field(..., title="Data Source")
+
+
+class DownloadFile(BaseModel):
+    url: str = Field(..., description="URL to download a file", title="URL")
+
+
+class LocalFile(BaseModel):
+    file_path: str = Field(
+        ..., description="Path to a local file", title="Local file path"
+    )
 
 
 class TimeRange(BaseModel):
@@ -60,7 +66,14 @@ class ErClientName(BaseModel):
     )
 
 
-class FormData(BaseModel):
+class LogoPath(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    input_method: Union[DownloadFile, LocalFile] = Field(..., title="Input Method")
+
+
+class Params(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
@@ -77,8 +90,5 @@ class FormData(BaseModel):
     er_client_name: Optional[ErClientName] = Field(
         None, title="Connect to earth ranger"
     )
-    Subject_Group: Optional[SubjectGroup] = Field(
-        None,
-        alias="Subject Group",
-        description="Choose subject group to generate collar voltage charts and overall speedmap",
-    )
+    subject_group_var: Optional[SubjectGroupVar] = Field(None, title="")
+    logo_path: Optional[LogoPath] = Field(None, title="")

@@ -1,31 +1,31 @@
 id: source_voltage
 requirements:
   - name: ecoscope-workflows-core
-    version: "0.22.17.*"
+    version: "0.22.18.*"
     channel: https://repo.prefix.dev/ecoscope-workflows/
 
   - name: ecoscope-workflows-ext-ecoscope
-    version: "0.22.17.*"
+    version: "0.22.18.*"
     channel: https://repo.prefix.dev/ecoscope-workflows/
 
   - name: ecoscope-workflows-ext-custom
-    version: "0.0.40.*"
+    version: "0.0.45.*"
     channel: https://repo.prefix.dev/ecoscope-workflows-custom/
 
   - name: ecoscope-workflows-ext-ste
-    version: "0.0.18.*"
+    version: "0.0.19.*"
     channel: https://repo.prefix.dev/ecoscope-workflows-custom/
 
   - name: ecoscope-workflows-ext-mnc
-    version: "0.0.7.*"
-    channel: https://repo.prefix.dev/ecoscope-workflows-custom/
-
-  - name: ecoscope-workflows-ext-big-life
     version: "0.0.8.*"
     channel: https://repo.prefix.dev/ecoscope-workflows-custom/
 
+  - name: ecoscope-workflows-ext-big-life
+    version: "0.0.11.*"
+    channel: https://repo.prefix.dev/ecoscope-workflows-custom/
+
   - name: ecoscope-workflows-ext-mep
-    version: "0.0.13.*"
+    version: "0.0.15.*"
     channel: https://repo.prefix.dev/ecoscope-workflows-custom/
 
 rjsf-overrides:
@@ -56,7 +56,7 @@ workflow:
     task: set_groupers
     partial:
       groupers:
-        - index_name: "extra__subject__name"
+        - index_name: "name"
 
   # connect to earthranger
   - name: Connect to earth ranger
@@ -83,33 +83,6 @@ workflow:
       raise_on_empty: false
       include_details: true
       include_subjectsource_details: true
-
-  # - name: Transform observations to relocations
-  #   id: subject_reloc
-  #   task: process_relocations
-  #   partial:
-  #     observations: ${{ workflow.subject_observations.return }}
-  #     relocs_columns:
-  #       - groupby_col
-  #       - fixtime
-  #       - junk_status
-  #       - geometry
-  #       - extra__subject__name
-  #       - extra__subject__hex
-  #       - extra__subject__sex
-  #       - extra__created_at
-  #       - extra__subject__subject_subtype
-  #       - extra__subjectsource__id
-  #       - extra__subjectsource__assigned_range
-  #       - extra__observation_details
-
-  #     filter_point_coords:
-  #       - x: 180.000000
-  #         y: 90.000000
-  #       - x: 0.000000
-  #         y: 0.000000
-  #       - x: 1.000000
-  #         y: 1.000000
 
   - name: Rename reloc columns 
     id: rename_subject_reloc 
@@ -140,33 +113,6 @@ workflow:
       include_details: true
       include_subjectsource_details: true
 
-  # - name: Transform previous observations to relocations
-  #   id: previous_subject_reloc
-  #   task: process_relocations
-  #   partial:
-  #     observations: ${{ workflow.previous_subject_observations.return }}
-  #     relocs_columns:
-  #       - groupby_col
-  #       - fixtime
-  #       - junk_status
-  #       - geometry
-  #       - extra__subject__name
-  #       - extra__subject__hex
-  #       - extra__subject__sex
-  #       - extra__created_at
-  #       - extra__subject__subject_subtype
-  #       - extra__subjectsource__id
-  #       - extra__subjectsource__assigned_range
-  #       - extra__observation_details
-
-  #     filter_point_coords:
-  #       - x: 180.000000
-  #         y: 90.000000
-  #       - x: 0.000000
-  #         y: 0.000000
-  #       - x: 1.000000
-  #         y: 1.000000
-
   - name: Rename previous reloc columns 
     id: rename_previous_subject_reloc 
     task: map_columns 
@@ -182,13 +128,13 @@ workflow:
     id: extract_current_voltage
     task: extract_voltage_columns 
     partial: 
-      relocs: ${{ workflow.subject_observations.return }}
+      relocs: ${{ workflow.rename_subject_reloc.return }}
       
   - name: Extract previous voltage columns 
     id: extract_previous_voltage
     task: extract_voltage_columns 
     partial: 
-      relocs: ${{ workflow.previous_subject_observations.return }}
+      relocs: ${{ workflow.rename_previous_subject_reloc.return }}
   
   - name: Split current reloc groups 
     id: split_current_relocs 
@@ -208,7 +154,7 @@ workflow:
     id: get_unique_subject_name 
     task: dataframe_column_first_unique_str
     partial:
-      column_name: "extra__subject__name"
+      column_name: "name"
     mapvalues:
       argnames: df
       argvalues: ${{ workflow.split_current_relocs.return }}
@@ -258,14 +204,15 @@ workflow:
     task: html_to_png
     partial:
       output_dir: ${{ env.ECOSCOPE_WORKFLOWS_RESULTS }}
-      html_path: ${{ workflow.persist_collar_html.return }}
       config:
         full_page: false
         device_scale_factor: 2.0
-        wait_for_timeout: 10
+        wait_for_timeout: 20
         max_concurrent_pages: 1
-
-  - 
+    mapvalues: 
+      argnames: html_path 
+      argvalues: ${{ workflow.persist_collar_html.return }}
+        
   - name: Create widget for collar voltage plot
     id: collared_voltage_widget
     task: create_map_widget_single_view
@@ -286,17 +233,38 @@ workflow:
     partial:
       widgets: ${{ workflow.collared_voltage_widget.return }}
 
-  # # Download Logo
-  # - title: Report logo
-  #   type: task-group
-  #   description: Download or fetch the logo to be used in the report cover page. This task can be customized to fetch logos from different sources based on user requirements.
-  #   tasks:
-  #     - name: null
-  #       id: logo_path
-  #       task: get_file_path 
-  #       partial: 
-  #         output_path: ${{ env.ECOSCOPE_WORKFLOWS_RESULTS }}
-          
+  # Download Logo
+  - title: Report logo
+    type: task-group
+    description: Download or fetch the logo to be used in the report cover page. This task can be customized to fetch logos from different sources based on user requirements.
+    tasks:
+      - name: null
+        id: logo_path
+        task: get_file_path 
+        partial: 
+          output_path: ${{ env.ECOSCOPE_WORKFLOWS_RESULTS }}
+  
+  - name: Download collar voltage template 
+    id: persist_template
+    task: fetch_and_persist_file
+    partial:
+      url: https://www.dropbox.com/scl/fi/ywlnnl3dvnqncrh2uzif0/source_voltage_report.docx?rlkey=2m0dtzr6hf5ll2sn3yaq8z5rt&st=avvjku8o&dl=0
+      output_path: ${{ env.ECOSCOPE_WORKFLOWS_RESULTS }}
+      overwrite_existing: false
+      retries: 3
+      unzip: false
+  
+  - name: Persist word doc 
+    id: persist_word_doc 
+    task: generate_source_voltage_report
+    partial: 
+      org_logo_path: ${{ workflow.logo_path.return }}
+      report_period: ${{ workflow.time_range.return }}
+      prepared_by: "Ecoscope"
+      output_dir: ${{ env.ECOSCOPE_WORKFLOWS_RESULTS }}
+      filename: "source_voltage_report.docx"
+      template_path: ${{ workflow.persist_template.return }}
+
   - name: Collar Voltage widget
     id: collar_voltage_dashboard
     task: gather_dashboard

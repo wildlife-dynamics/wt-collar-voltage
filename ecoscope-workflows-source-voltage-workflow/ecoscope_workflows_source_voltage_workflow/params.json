@@ -75,27 +75,40 @@
       "type": "object",
       "title": "Connect to earth ranger"
     },
-    "Subject Group": {
-      "type": "object",
-      "description": "Choose subject group to generate collar voltage charts and overall speedmap",
-      "ecoscope:task_group": true,
+    "subject_group_var": {
+      "additionalProperties": false,
       "properties": {
-        "subject_group_var": {
-          "additionalProperties": false,
-          "properties": {
-            "var": {
-              "title": "Subject Group Name",
-              "type": "string",
-              "default": "Elephants"
-            }
-          },
-          "required": [
-            "var"
-          ],
-          "type": "object",
-          "title": ""
+        "var": {
+          "title": "",
+          "type": "string"
         }
-      }
+      },
+      "required": [
+        "var"
+      ],
+      "type": "object",
+      "title": ""
+    },
+    "logo_path": {
+      "additionalProperties": false,
+      "properties": {
+        "input_method": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DownloadFile"
+            },
+            {
+              "$ref": "#/$defs/LocalFile"
+            }
+          ],
+          "title": "Input Method"
+        }
+      },
+      "required": [
+        "input_method"
+      ],
+      "type": "object",
+      "title": ""
     }
   },
   "$defs": {
@@ -139,6 +152,34 @@
       ],
       "title": "EarthRangerConnection",
       "type": "object"
+    },
+    "DownloadFile": {
+      "properties": {
+        "url": {
+          "description": "URL to download a file",
+          "title": "URL",
+          "type": "string"
+        }
+      },
+      "required": [
+        "url"
+      ],
+      "title": "Download from URL",
+      "type": "object"
+    },
+    "LocalFile": {
+      "properties": {
+        "file_path": {
+          "description": "Path to a local file",
+          "title": "Local file path",
+          "type": "string"
+        }
+      },
+      "required": [
+        "file_path"
+      ],
+      "title": "Use local file",
+      "type": "object"
     }
   },
   "uiSchema": {
@@ -160,7 +201,8 @@
       "workflow_details",
       "time_range",
       "er_client_name",
-      "Subject Group"
+      "subject_group_var",
+      "logo_path"
     ]
   },
   "additionalProperties": false

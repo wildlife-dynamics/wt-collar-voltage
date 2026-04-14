@@ -4,7 +4,7 @@
 # ruff: noqa: E402
 
 # %% [markdown]
-# # Collar Voltage
+# # Source Voltage
 # TODO: top level description
 
 # %% [markdown]
@@ -34,11 +34,15 @@ from ecoscope_workflows_core.tasks.skip import (
 from ecoscope_workflows_core.tasks.skip import any_is_empty_df as any_is_empty_df
 from ecoscope_workflows_core.tasks.skip import never as never
 from ecoscope_workflows_core.tasks.transformation import map_columns as map_columns
+from ecoscope_workflows_ext_custom.tasks.io import html_to_png as html_to_png
 from ecoscope_workflows_ext_ecoscope.tasks.io import (
     get_subjectgroup_observations as get_subjectgroup_observations,
 )
 from ecoscope_workflows_ext_mep.tasks import (
     extract_voltage_columns as extract_voltage_columns,
+)
+from ecoscope_workflows_ext_mep.tasks import (
+    generate_source_voltage_report as generate_source_voltage_report,
 )
 from ecoscope_workflows_ext_mep.tasks import (
     generate_subject_voltage_chart as generate_subject_voltage_chart,
@@ -47,6 +51,10 @@ from ecoscope_workflows_ext_mep.tasks import get_previous_period as get_previous
 from ecoscope_workflows_ext_ste.tasks import (
     dataframe_column_first_unique_str as dataframe_column_first_unique_str,
 )
+from ecoscope_workflows_ext_ste.tasks import (
+    fetch_and_persist_file as fetch_and_persist_file,
+)
+from ecoscope_workflows_ext_ste.tasks import get_file_path as get_file_path
 from ecoscope_workflows_ext_ste.tasks import zip_groupbykey as zip_groupbykey
 
 # %% [markdown]
@@ -137,7 +145,7 @@ groupers = (
         ],
         unpack_depth=1,
     )
-    .partial(groupers=[{"index_name": "extra__subject__name"}], **groupers_params)
+    .partial(groupers=[{"index_name": "name"}], **groupers_params)
     .call()
 )
 
@@ -397,7 +405,7 @@ extract_current_voltage = (
         ],
         unpack_depth=1,
     )
-    .partial(relocs=subject_observations, **extract_current_voltage_params)
+    .partial(relocs=rename_subject_reloc, **extract_current_voltage_params)
     .call()
 )
 
@@ -425,7 +433,7 @@ extract_previous_voltage = (
         ],
         unpack_depth=1,
     )
-    .partial(relocs=previous_subject_observations, **extract_previous_voltage_params)
+    .partial(relocs=rename_previous_subject_reloc, **extract_previous_voltage_params)
     .call()
 )
 
@@ -513,7 +521,7 @@ get_unique_subject_name = (
         ],
         unpack_depth=1,
     )
-    .partial(column_name="extra__subject__name", **get_unique_subject_name_params)
+    .partial(column_name="name", **get_unique_subject_name_params)
     .mapvalues(argnames=["df"], argvalues=split_current_relocs)
 )
 
@@ -648,6 +656,43 @@ persist_collar_html = (
 
 
 # %% [markdown]
+# ## Convert collared plot html to png
+
+# %%
+# parameters
+
+convert_collared_png_params = dict()
+
+# %%
+# call the task
+
+
+convert_collared_png = (
+    html_to_png.set_task_instance_id("convert_collared_png")
+    .handle_errors()
+    .with_tracing()
+    .skipif(
+        conditions=[
+            any_is_empty_df,
+            any_dependency_skipped,
+        ],
+        unpack_depth=1,
+    )
+    .partial(
+        output_dir=os.environ["ECOSCOPE_WORKFLOWS_RESULTS"],
+        config={
+            "full_page": False,
+            "device_scale_factor": 2.0,
+            "wait_for_timeout": 20,
+            "max_concurrent_pages": 1,
+        },
+        **convert_collared_png_params,
+    )
+    .mapvalues(argnames=["html_path"], argvalues=persist_collar_html)
+)
+
+
+# %% [markdown]
 # ## Create widget for collar voltage plot
 
 # %%
@@ -698,6 +743,107 @@ grouped_collared_widget = (
         unpack_depth=1,
     )
     .partial(widgets=collared_voltage_widget, **grouped_collared_widget_params)
+    .call()
+)
+
+
+# %% [markdown]
+# ##
+
+# %%
+# parameters
+
+logo_path_params = dict(
+    input_method=...,
+)
+
+# %%
+# call the task
+
+
+logo_path = (
+    get_file_path.set_task_instance_id("logo_path")
+    .handle_errors()
+    .with_tracing()
+    .skipif(
+        conditions=[
+            any_is_empty_df,
+            any_dependency_skipped,
+        ],
+        unpack_depth=1,
+    )
+    .partial(output_path=os.environ["ECOSCOPE_WORKFLOWS_RESULTS"], **logo_path_params)
+    .call()
+)
+
+
+# %% [markdown]
+# ## Download collar voltage template
+
+# %%
+# parameters
+
+persist_template_params = dict()
+
+# %%
+# call the task
+
+
+persist_template = (
+    fetch_and_persist_file.set_task_instance_id("persist_template")
+    .handle_errors()
+    .with_tracing()
+    .skipif(
+        conditions=[
+            any_is_empty_df,
+            any_dependency_skipped,
+        ],
+        unpack_depth=1,
+    )
+    .partial(
+        url="https://www.dropbox.com/scl/fi/ywlnnl3dvnqncrh2uzif0/source_voltage_report.docx?rlkey=2m0dtzr6hf5ll2sn3yaq8z5rt&st=avvjku8o&dl=0",
+        output_path=os.environ["ECOSCOPE_WORKFLOWS_RESULTS"],
+        overwrite_existing=False,
+        retries=3,
+        unzip=False,
+        **persist_template_params,
+    )
+    .call()
+)
+
+
+# %% [markdown]
+# ## Persist word doc
+
+# %%
+# parameters
+
+persist_word_doc_params = dict()
+
+# %%
+# call the task
+
+
+persist_word_doc = (
+    generate_source_voltage_report.set_task_instance_id("persist_word_doc")
+    .handle_errors()
+    .with_tracing()
+    .skipif(
+        conditions=[
+            any_is_empty_df,
+            any_dependency_skipped,
+        ],
+        unpack_depth=1,
+    )
+    .partial(
+        org_logo_path=logo_path,
+        report_period=time_range,
+        prepared_by="Ecoscope",
+        output_dir=os.environ["ECOSCOPE_WORKFLOWS_RESULTS"],
+        filename="source_voltage_report.docx",
+        template_path=persist_template,
+        **persist_word_doc_params,
+    )
     .call()
 )
 
