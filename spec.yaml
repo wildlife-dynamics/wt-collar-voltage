@@ -35,8 +35,6 @@ rjsf-overrides:
     Subject Group.properties.subject_group_var.properties.var.title: Subject Group Name
     Subject Group.properties.subject_group_var.properties.var.default: Elephants
     Previous Period.properties.set_previous_period.properties.offset.description: "Choose how to calculate the comparison period's Start Date. In every mode, the comparison period ends on your selected time range's Start Date (so it never overlaps with the current period) — only the Start Date changes."
-    # Report Logo (now part of the Generate Word Doc Report task-group)
-    Generate Word Doc Report.properties.logo_path.properties.input_method.description: "Provide the organization logo to display on the report cover page (PNG or JPG recommended). Required when 'Generate Word Doc Report' is enabled; leave blank otherwise."
 
   $defs:
     # Restrict category options to Subject Name ,Subject Sex and Subject Subtype
@@ -45,7 +43,7 @@ rjsf-overrides:
         title: Subject Name
 workflow:
   # set workflow details
-  - name: Set Workflow Details
+  - name: Workflow Details
     id: workflow_details
     task: set_workflow_details
 
@@ -376,13 +374,14 @@ workflow:
       retries: 3
       unzip: false
 
-  - title: Generate Word Doc Report
+  # Download Logo
+  - title: Word Document Cover Page Logo
     type: task-group
-    description: Configure word report settings
+    description: Download or fetch the logo to be used in the report cover page.
     tasks:
       - name: null
         id: logo_path
-        task: get_file_path
+        task: get_file_path 
         partial:
           output_path: ${{ env.ECOSCOPE_WORKFLOWS_RESULTS }}
 
